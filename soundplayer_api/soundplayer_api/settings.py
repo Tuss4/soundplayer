@@ -44,6 +44,7 @@ INSTALLED_APPS = (
     'listeners',
     'playlists',
     'api',
+    'scloudtoken',
 )
 
 MIDDLEWARE_CLASSES = (
