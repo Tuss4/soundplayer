@@ -124,3 +124,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     )
 }
+
+# Soundcloud settings
+SOUNDCLOUD_CLIENT_ID = os.getenv('SOUNDCLOUD_ID')
+SOUNDCLOUD_SECRET = os.getenv('SOUNDCLOUD_SECRET')
+SOUNDCLOUD_REDIRECT_URL = os.getenv('SOUNDCLOUD_REDIRECT_URL')
