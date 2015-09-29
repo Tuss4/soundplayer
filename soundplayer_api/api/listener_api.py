@@ -7,6 +7,7 @@ import soundcloud
 from django.conf import settings
 from listeners.models import Listener
 from listeners.serializers import ListenerLoginSerializer
+from playlists.models import Playlist
 from scloudtoken.models import SoundcloudToken
 
 
@@ -34,7 +35,7 @@ class SoundCloudLogin(views.APIView):
         except Listener.DoesNotExist:
             l = Listener.objects.create_user(
                 email=serializer.data.get('email'),
-                scloud_uname=serializer.data.get('soundcloud_username'))
+                scloud_uname=serializer.data.get('soundcloud_username').lower())
             r = {
                 "redirect_url": SOUNDCLIENT.authorize_url(),
                 "id": l.pk,
@@ -50,19 +51,25 @@ class SoundCloudAuth(views.APIView):
     def get(self, request, *args, **kwargs):
         code = request.query_params.get('code')
         if code:
-            print code
-            print settings.SOUNDCLOUD_CLIENT_ID
             token = SOUNDCLIENT.exchange_token(code)
-            print token.access_token
             client = soundcloud.Client(access_token=token.access_token)
             listener_name = client.get('/me').username
-            print listener_name
             try:
                 l = Listener.objects.get(soundcloud_username=listener_name.lower())
                 SoundcloudToken.objects.create(
                     listener=l,
                     access_token=token.access_token,
                 )
+                playlists = client.get('/me/playlists')
+                for p in playlists:
+                    embed = client.get('/oembed', url=p.permalink_url)
+                    Playlist.objects.create(
+                        listener=l,
+                        scloud_id=p.id,
+                        title=p.title,
+                        scloud_url=p.permalink_url,
+                        embed_code=embed.html
+                    )
             except Listener.DoesNotExist:
                 return Response(
                     dict(detail="Listener not found."), status=status.HTTP_404_NOT_FOUND)
