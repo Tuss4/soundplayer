@@ -5,6 +5,7 @@ import soundcloud
 
 from playlists.serializers import PlaylistSerializer
 from playlists.models import Playlist
+from playlists.permissions import PlaylistPermission
 
 
 class ListPlaylistsView(generics.ListAPIView):
@@ -19,4 +20,5 @@ class PlaylistDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     queryset = Playlist.objects.all()
     serializer_class = PlaylistSerializer
+    permission_classes = (PlaylistPermission, )
     lookup_url_kwarg = 'playlist_pk'
